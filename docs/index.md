@@ -24,6 +24,9 @@ In short, the idea is that your UI consists of:
 ## A small, yet complete example
 
 ```haskell
+main :: Effect Unit
+main = Boot.defaultMain { elementId: "app", def: { init, view, update } }
+
 type Cell = { x :: Int, y :: Int }
 type State = Array Cell
 data Message = Up | Down | Left | Right
