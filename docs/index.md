@@ -23,6 +23,10 @@ In short, the idea is that your UI consists of:
 
 ## A small, yet complete example
 
+This example is just to give the overall feel of what an Elmish UI generally
+looks like, and to tie together the above bullet-list definition. For more
+explanations and tutorials, see [Getting Started][getting-started.md].
+
 ```haskell
 type Cell = { x :: Int, y :: Int }
 type State = Array Cell
