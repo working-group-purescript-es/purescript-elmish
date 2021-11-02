@@ -4,7 +4,7 @@
 
 Elmish is a PureScript library, and PureScript works with
 [NodeJS](https://nodejs.org/en/download/), and that's pretty much the only tool
-you'll need to actually install.
+you'll need to install upfront.
 
 ## Initialize an empty project
 
