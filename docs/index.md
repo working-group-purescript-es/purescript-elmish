@@ -23,6 +23,10 @@ In short, the idea is that your UI consists of:
 
 ## A small, yet complete example
 
+Some more involved examples can be found in the
+[elmish-examples](https://github.com/collegevine/purescript-elmish-examples)
+repository.
+
 This example is just to give the overall feel of what an Elmish UI generally
 looks like, and to tie together the above bullet-list definition. For more
 explanations and tutorials, see [Getting Started](getting-started.md).
