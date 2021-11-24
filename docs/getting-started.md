@@ -6,27 +6,24 @@ Elmish is a PureScript library, and PureScript works with
 [NodeJS](https://nodejs.org/en/download/), and that's pretty much the only tool
 you'll need to install upfront.
 
+This tutorial assumes a basic familiarity with PureScript language as such
+
 ## Initialize an empty project
 
-First, create a directory and set up the tool chain in it:
-
-1. Create an empty directory
-2. Run `npm init` to initialize a new Node project in the directory. This will
-   ask you a bunch of questions, but you can just hit Enter to all of them,
-   they're not important. The result should be a lone `package.json` file in the
-   directory.
-3. Run `npm install --save purescript spago react react-dom esbuild` to install:
+1. Create an empty directory, run `npm init` to initialize a new Node project.
+   The result should be a lone `package.json` file.
+2. Run `npm install --save purescript spago react react-dom esbuild` to install:
     * `purescript` - the PureScript compiler.
     * `spago` - [the PureScript package manager](https://github.com/purescript/spago).
     * `react` and `react-dom` - the React library, on which Elmish is based.
     * `esbuild` - the fastest JavaScript bundler currently available.
-4. Run `npx spago init` to initialize a new PureScript project in the directory.
+3. Run `npx spago init` to initialize a new PureScript project in the directory.
    This should create a bit of scaffolding, including a couple of `*.dhall` files
    and an `src` directory with `Main.purs` in it.
-5. Run `npx spago install elmish elmish-html` to install the Elmish library and
+4. Run `npx spago install elmish elmish-html` to install the Elmish library and
    its companion `elmish-html`.
 
-Now that you have the barebones project, add a way to run and test it:
+## Minimal SPA scaffolding
 
 1. Using your favourite text editor, create a file named `index.html` and put
    the following code in it:
@@ -71,7 +68,7 @@ and `view`. We're going to put all of this in `Main.purs`:
 -- Nothing happens in our UI so far, so there are no messages
 data Message
 
--- The UI is just static text, so there is no state
+-- The UI is just static text, so there is no initial state
 type State = Unit
 
 -- Since there is no state, there is nothing to initialize
@@ -125,7 +122,7 @@ it to change:
 type State = { word :: String }
 ```
 
-The `init` function should change accordingly:
+The `init` function should provide initial state of the right type:
 
 ```haskell
 init :: Transition Message State
