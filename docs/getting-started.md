@@ -19,7 +19,7 @@ First, create a directory and set up the tool chain in it:
     * `purescript` - the PureScript compiler.
     * `spago` - [the PureScript package manager](https://github.com/purescript/spago).
     * `react` and `react-dom` - the React library, on which Elmish is based.
-    * `esbuild` - the fastest JavaScript bundle currently available.
+    * `esbuild` - the fastest JavaScript bundler currently available.
 4. Run `npx spago init` to initialize a new PureScript project in the directory.
    This should create a bit of scaffolding, including a couple of `*.dhall` files
    and an `src` directory with `Main.purs` in it.
