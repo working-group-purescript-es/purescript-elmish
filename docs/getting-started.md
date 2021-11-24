@@ -15,10 +15,11 @@ First, create a directory and set up the tool chain in it:
    ask you a bunch of questions, but you can just hit Enter to all of them,
    they're not important. The result should be a lone `package.json` file in the
    directory.
-3. Run `npm install --save purescript spago react react-dom` to install:
+3. Run `npm install --save purescript spago react react-dom esbuild` to install:
     * `purescript` - the PureScript compiler.
     * `spago` - [the PureScript package manager](https://github.com/purescript/spago).
     * `react` and `react-dom` - the React library, on which Elmish is based.
+    * `esbuild` - the fastest JavaScript bundle currently available.
 4. Run `npx spago init` to initialize a new PureScript project in the directory.
    This should create a bit of scaffolding, including a couple of `*.dhall` files
    and an `src` directory with `Main.purs` in it.
@@ -60,5 +61,98 @@ Now that you have the barebones project, add a way to run and test it:
    Open that address in a browser. You should see text "_The UI is not here
    yet_". If you don't see that, something is wrong with the setup so far.
 
-## Write your first Elmish UI
+## Hello World
 
+To start your Elmish UI, first you'll need to define the five elements, as
+explained in [the overview](index.md), - `State`, `Message`, `init`, `update`,
+and `view`. We're going to put all of this in `Main.purs`:
+
+```haskell
+-- Nothing happens in our UI so far, so there are no messages
+data Message
+
+-- The UI is just static text, so there is no state
+type State = Unit
+
+-- Since there is no state, there is nothing to initialize
+init :: Transition Message State
+init = pure unit
+
+-- Since there are no messages, the `update` function is also trivial
+update :: State -> Message -> Transition Message State
+update _ _ = pure unit
+
+view :: State -> Dispatch Message -> ReactElement
+view _ _ =
+   H.div {}
+   [ H.text "Hello, "
+   , H.strong {} "World!"
+   ]
+```
+
+To make that compile, you'll need the following imports:
+
+```haskell
+import Elmish (Transition, Dispatch, ReactElement)
+import Elmish.HTML as H  -- This is more convenient to import qualified
+import Elmish.Boot (defaultMain) -- We'll need this in a moment
+```
+
+Now all that remains is hook that up to the entry point. To do that, put the
+following in `main`:
+
+```haskell
+main :: Effect Unit
+main = defaultMain { def: { init, view, update }, elementId: "app" }
+```
+
+Now save and refresh your browser (assuming you still have `npm start` running).
+You should see "Hello, **World!**" on the screen.
+
+## Interaction
+
+Now let's add some interaction. We'll do the simplest kind for now: a button
+click. To do that, we'll need a message to describe the click:
+
+```haskell
+data Message = ButtonClicked
+```
+
+And in order for the button to have a visible effect, we'll add some state for
+it to change:
+
+```haskell
+type State = { word :: String }
+```
+
+The `init` function should change accordingly:
+
+```haskell
+init :: Transition Message State
+init = pure { word: "World" }
+```
+
+And the `update` function should react to the button click by updating the
+state:
+
+```haskell
+update :: State -> Message -> Transition Message State
+update state ButtonClicked = pure state { word = "Elmish" }
+```
+
+And finally, the `view` function should add a button:
+
+```haskell
+view :: State -> Dispatch Message -> ReactElement
+view state dispatch =
+   H.div {}
+   [ H.text "Hello, "
+   , H.strong {} state.word
+   , H.text "! "
+   , H.button { onClick: dispatch ButtonClicked } "Click me!"
+   ]
+```
+
+If you refresh your browser now, you should see this:
+
+![Interaction](getting-started-interaction.gif)
