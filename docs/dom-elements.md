@@ -48,7 +48,7 @@ We find this much more convenient in practice, but of course it's stricly option
 
 ### **Q:** ok, but what if I need to pass other props, besides `className`?
 
-To facilitate this, every element in `Elmish.HTML.Styled` has two versions - e.g. `button` and `button_` (note the underscore). The former just takes CSS class as parameter, while the latter also takes the other props as a record:
+To facilitate this, every element in `Elmish.HTML.Styled` has two versions - e.g. `button` and `button_` (note the underscore). The former just takes CSS class as parameter, while the latter also takes other props as a record:
 
 ```haskell
 import Elmish.HTML.Styled as H
