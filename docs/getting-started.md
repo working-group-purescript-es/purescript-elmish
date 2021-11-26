@@ -113,21 +113,24 @@ Now let's add some interaction. We'll do the simplest kind for now: a button
 click. To do that, we'll need a message to describe the click:
 
 ```haskell
-data Message = ButtonClicked
+- data Message
++ data Message = ButtonClicked
 ```
 
 And in order for the button to have a visible effect, we'll add some state for
 it to change:
 
 ```haskell
-type State = { word :: String }
+- type State = Unit
++ type State = { word :: String }
 ```
 
 The `init` function should provide initial state of the right type:
 
 ```haskell
 init :: Transition Message State
-init = pure { word: "World" }
+- init = pure unit
++ init = pure { word: "World" }
 ```
 
 And the `update` function should react to the button click by updating the
@@ -135,22 +138,34 @@ state:
 
 ```haskell
 update :: State -> Message -> Transition Message State
-update state ButtonClicked = pure state { word = "Elmish" }
+- update _ _ = pure unit
++ update state ButtonClicked = pure state { word = "Elmish" }
 ```
 
 And finally, the `view` function should add a button:
 
 ```haskell
 view :: State -> Dispatch Message -> ReactElement
-view state dispatch =
-   H.div {}
-   [ H.text "Hello, "
-   , H.strong {} state.word
-   , H.text "! "
-   , H.button { onClick: dispatch ButtonClicked } "Click me!"
-   ]
+- view _ _ =
+-    H.div {}
+-    [ H.text "Hello, "
+-    , H.strong {} "World!"
+-    ]
++ view state dispatch =
++    H.div {}
++    [ H.text "Hello, "
++    , H.strong {} state.word
++    , H.text "! "
++    , H.button { onClick: dispatch ButtonClicked } "Click me!"
++    ]
 ```
 
 If you refresh your browser now, you should see this:
 
 ![Interaction](getting-started-interaction.gif)
+
+
+
+## Using Bootstrap
+
+If you prefer Bootstrap for styling (or another atomic CSS library), you could use it as
