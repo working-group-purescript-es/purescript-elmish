@@ -96,7 +96,7 @@ import Elmish.HTML as H  -- This is more convenient to import qualified
 import Elmish.Boot (defaultMain) -- We'll need this in a moment
 ```
 
-Now all that remains is hook that up to the entry point. To do that, put the
+Now all that remains is to hook that up to the entry point. To do that, put the
 following in `main`:
 
 ```haskell
@@ -104,15 +104,15 @@ main :: Effect Unit
 main = defaultMain { def: { init, view, update }, elementId: "app" }
 ```
 
-Now save and refresh your browser (assuming you still have `npm start` running).
-You should see "Hello, **World!**" on the screen.
+Now save and refresh your browser. Assuming you still have `npm start` running,
+you should see "Hello, **World!**" on the screen.
 
 ## Interaction
 
 Now let's add some interaction. We'll do the simplest kind for now: a button
 click. To do that, we'll need a message to describe the click:
 
-```haskell
+```diff
 - data Message
 + data Message = ButtonClicked
 ```
@@ -120,15 +120,15 @@ click. To do that, we'll need a message to describe the click:
 And in order for the button to have a visible effect, we'll add some state for
 it to change:
 
-```haskell
+```diff
 - type State = Unit
 + type State = { word :: String }
 ```
 
 The `init` function should provide initial state of the right type:
 
-```haskell
-init :: Transition Message State
+```diff
+  init :: Transition Message State
 - init = pure unit
 + init = pure { word: "World" }
 ```
@@ -136,36 +136,59 @@ init :: Transition Message State
 And the `update` function should react to the button click by updating the
 state:
 
-```haskell
-update :: State -> Message -> Transition Message State
+```diff
+  update :: State -> Message -> Transition Message State
 - update _ _ = pure unit
 + update state ButtonClicked = pure state { word = "Elmish" }
 ```
 
 And finally, the `view` function should add a button:
 
-```haskell
-view :: State -> Dispatch Message -> ReactElement
+```diff
+  view :: State -> Dispatch Message -> ReactElement
 - view _ _ =
--    H.div {}
--    [ H.text "Hello, "
--    , H.strong {} "World!"
--    ]
 + view state dispatch =
-+    H.div {}
-+    [ H.text "Hello, "
+     H.div {}
+     [ H.text "Hello, "
+-    , H.strong {} "World!"
 +    , H.strong {} state.word
 +    , H.text "! "
 +    , H.button { onClick: dispatch ButtonClicked } "Click me!"
-+    ]
+     ]
 ```
 
 If you refresh your browser now, you should see this:
 
 ![Interaction](getting-started-interaction.gif)
 
-
+> **NOTE:** we just introduced the first prop (`onClick`) passed to a DOM element (`button`).
+For a more detailed discussion of props, see [DOM elements](dom-elements.md).
 
 ## Using Bootstrap
 
-If you prefer Bootstrap for styling (or another atomic CSS library), you could use it as
+If you're using Bootstrap (or another atomic CSS library), you could pass the standard React `className` prop. For example:
+
+```haskell
+H.div { className: "border bg-light" }
+[ ...
+, H.button { className: "btn btn-primary px-4", onClick: dispatch ButtonClicked } "Click me!"
+]
+```
+
+But a more convenient way is to use module `Elmish.HTML.Styled`, which allows passing the CSS class as first parameter to all elements:
+
+```haskell
+import Elmish.HTML.Styled as H
+
+...
+
+H.div "border bg-light"
+[ ...
+, H.button_ "btn btn-primary px-4" { onClick: dispatch ButtonClicked } "Click me!"
+]
+```
+
+For more details on this, see [DOM elements](dom-elements.md#atomic-css).
+
+> **NOTE**: from now on, all examples will be using this scheme
+
