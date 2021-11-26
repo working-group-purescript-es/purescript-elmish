@@ -1,0 +1,39 @@
+# DOM elements
+
+## <a name="atomic-css"></a>Atomic CSS support
+
+If you prefer Bootstrap for styling (or another atomic CSS library), you could use it exactly the same way you would in React - by passing in a `className` prop. For example:
+
+```haskell
+H.div { className: "border bg-light" }
+[ ...
+, H.button { className: "btn btn-primary px-4", onClick: dispatch ButtonClicked } "Click me!"
+]
+```
+
+But we found that this quickly becomes quite inconvenient. So the `elmish-html` library provides an alternative module `Elmish.HTML.Styled`, which exports alternative versions of all elements taking the CSS class as first parameter:
+
+```haskell
+import Elmish.HTML.Styled as H
+
+...
+
+H.div "border bg-light"
+[ ...
+, H.button "btn btn-primary px-4" "Click me!"
+]
+```
+
+This scheme is somewhat inspired by the [HAML templates](https://haml.info/), which for the example above would look something like this:
+
+```haml
+%div.border.bg-light
+  ...
+  %button.btn.btn-primary.px-4 Click me!
+```
+
+We find this much more convenient in practice, but of course it's stricly optional. And you can also mix and match as you wish.
+
+> **Q**: ok, but what if I need to pass other props, besides `className`?
+
+To facilitate this, every element in `Elmish.HTML.Styled` has two versions - e.g. `button` and `button_` (note the underscore). The former just takes CSS class as parameter, while the latter
