@@ -9,13 +9,18 @@
 * passing record subset
 * same as React props. In fact, going straight to React
 
+## Content
+* Some elements have it, others don't
+
 ## <a name="atomic-css"></a>Atomic CSS support
 
 If you prefer Bootstrap for styling (or another atomic CSS library), you could use it exactly the same way you would in React - by passing in a `className` prop. For example:
 
 ```haskell
+import Elmish.HTML as H
+
 H.div { className: "border bg-light" }
-[ ...
+[ H.p { className: "mt-4 mb-3" } "Click this button:"
 , H.button { className: "btn btn-primary px-4", onClick: dispatch ButtonClicked } "Click me!"
 ]
 ```
@@ -25,10 +30,8 @@ But we found that this quickly becomes quite inconvenient. So the `elmish-html` 
 ```haskell
 import Elmish.HTML.Styled as H
 
-...
-
 H.div "border bg-light"
-[ ...
+[ H.p "mt-4 mb-3" "Click this button:"
 , H.button "btn btn-primary px-4" "Click me!"
 ]
 ```
@@ -43,9 +46,20 @@ This scheme is somewhat inspired by the [HAML templates](https://haml.info/), wh
 
 We find this much more convenient in practice, but of course it's stricly optional. And you can also mix and match as you wish.
 
-> **Q**: ok, but what if I need to pass other props, besides `className`?
+### **Q:** ok, but what if I need to pass other props, besides `className`?
 
-To facilitate this, every element in `Elmish.HTML.Styled` has two versions - e.g. `button` and `button_` (note the underscore). The former just takes CSS class as parameter, while the latter
+To facilitate this, every element in `Elmish.HTML.Styled` has two versions - e.g. `button` and `button_` (note the underscore). The former just takes CSS class as parameter, while the latter also takes the other props as a record:
+
+```haskell
+import Elmish.HTML.Styled as H
+
+H.div "border bg-light"
+[ H.p "mt-4 mb-3" "Click this button:"
+, H.button_ "btn btn-primary px-4" { onClick: foo } "Click me!"
+]
+```
+
+This scheme is used for all elements, even those that don't make sense without props (such as `img` or `input`), just for consistency and predictability.
 
 ## Event handlers
 * A work in progress, not good API
