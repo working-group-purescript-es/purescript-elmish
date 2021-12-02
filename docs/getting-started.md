@@ -166,7 +166,8 @@ For a more detailed discussion of props, see [DOM elements](dom-elements.md).
 
 ## Using Bootstrap
 
-If you're using Bootstrap (or another atomic CSS library), you could pass the standard React `className` prop. For example:
+If you're using Bootstrap (or another atomic CSS library), you could pass the
+standard React `className` prop. For example:
 
 ```haskell
 H.div { className: "border bg-light" }
@@ -175,7 +176,8 @@ H.div { className: "border bg-light" }
 ]
 ```
 
-But a more convenient way is to use module `Elmish.HTML.Styled`, which allows passing the CSS class as first parameter to all elements:
+But a more convenient way is to use module `Elmish.HTML.Styled`, which allows
+passing the CSS class as first parameter to all elements:
 
 ```haskell
 import Elmish.HTML.Styled as H
@@ -192,3 +194,71 @@ For more details on this, see [DOM elements](dom-elements.md#atomic-css).
 
 > **NOTE**: from now on, all examples will be using this scheme
 
+## More complex events
+
+The `onClick` event we used above is nice, but it's a limited example of an
+event: it doesn't have any parameters, but most events do.
+
+The `elmish-html` library models all events of standard DOM elements as an
+effectful function (i.e. `EffectFn1`) taking a `Foreign` parameter, even though
+the underlying value is actuall React Synthetic Event. Mostly this is because
+it's still a work in progress. Events may get a more interesting type in the
+future.
+
+But for now, the idea is to get the `Foreign` parameter and extract interesting
+values from it via `readForeign`, which is a standard Elmish mechanism for
+dealing with JS values of unknown nature ([see here for more on
+it](read-foreign.md)).
+
+To illustrate this, let's add a textbox to our application to let the user edit
+the text:
+
+```diff
+- data Message = ButtonClicked
++ data Message
++   = ButtonClicked
++   | WordChanged String
+
+  type State = { word :: String }
+
+  init :: Transition Message State
+  init = pure { word: "World" }
+
+  update :: State -> Message -> Transition Message State
+  update state ButtonClicked = pure state { word = "Elmish" }
++ update state (WordChanged s) = pure state { word = s }
+
+  view :: State -> Dispatch Message -> ReactElement
+  view state dispatch =
+    H.div "p-4"
++   [ H.input_ "d-block"
++     { type: "text"
++     , value: state.word
++     , onChange: mkEffectFn1 \f -> do
++         let parsed = readForeign f :: Maybe { target :: { value :: String } }
++         case parsed of
++           Nothing -> pure unit
++           Just e -> dispatch $ WordChanged e.target.value
++     }
+  , H.div "mt-3"
+    [ H.text "Hello, "
+    , H.strong "" state.word
+    , H.text "! "
+    ]
+  , H.button_ "btn btn-primary mt-3" { onClick: dispatch ButtonClicked } "Click me!"
+  ]
+```
+
+![Event Arguments](getting-started-eventargs.gif)
+
+> **NOTE:** the example code is now using Bootstrap styles
+
+But of course, this is a bit too much ceremony, so there is a special operator `<?|` that takes care of the `case` and the `mkEffectFn1` parts for us:
+
+```hasell
+   , onChange: dispatch <?| \f ->
+      (readForeign f :: _ { target :: { value :: String } })
+      <#> \e -> WordChanged e.target.value
+```
+
+Unfortunately, we still have to specify the shape of the record. Otherwise the compiler won't be able to tell what we expect to find.

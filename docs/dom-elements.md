@@ -61,7 +61,7 @@ H.div "border bg-light"
 
 This scheme is used for all elements, even those that don't make sense without props (such as `img` or `input`), just for consistency and predictability.
 
-## Event handlers
+## <a name="events"></a>Event handlers
 * A work in progress, not good API
 * EffectFn1
 * <| and <?| helpers
