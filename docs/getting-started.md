@@ -157,13 +157,11 @@ And finally, the `view` function should add a button:
 + view state dispatch =
      H.div "p-4"
 +    [ H.div ""
--    [ H.text "Hello, "
--    , H.strong "" "World!"
--    , H.text "! "
-+      [ H.text "Hello, "
+       [ H.text "Hello, "
+-      , H.strong "" "World!"
 +      , H.strong "" state.word
-+      , H.text "! "
-+      ]
+       , H.text "! "
+       ]
 +    , H.button_ "btn btn-primary mt-3" { onClick: dispatch ButtonClicked } "Click me!"
      ]
 ```
@@ -220,13 +218,13 @@ the text:
 +           Nothing -> pure unit
 +           Just e -> dispatch $ WordChanged e.target.value
 +     }
-  , H.div "mt-3"
-    [ H.text "Hello, "
-    , H.strong "" state.word
-    , H.text "! "
+    , H.div "mt-3"
+      [ H.text "Hello, "
+      , H.strong "" state.word
+      , H.text "! "
+      ]
+    , H.button_ "btn btn-primary mt-3" { onClick: dispatch ButtonClicked } "Click me!"
     ]
-  , H.button_ "btn btn-primary mt-3" { onClick: dispatch ButtonClicked } "Click me!"
-  ]
 ```
 
 ![Event Arguments](getting-started-eventargs.gif)
