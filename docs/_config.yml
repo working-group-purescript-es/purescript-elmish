@@ -22,7 +22,7 @@ title: PureScript Elmish
 description: >-
   Elmish is a PureScript UI library that (loosely) follows The Elm
   Architecture and implemented as a thin layer on top of React.
-baseurl: "" # the subpath of your site, e.g. /blog
+baseurl: "/purescript-elmish" # the subpath of your site, e.g. /blog
 url: "" # the base hostname & protocol for your site, e.g. http://example.com
 github_username:  collegevine
 
