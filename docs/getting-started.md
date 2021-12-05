@@ -1,5 +1,9 @@
 # Getting Started with Elmish
 
+{% tip %}
+A tip
+{% end tip %}
+
 ## Requisite tools
 
 Elmish is a PureScript library, and PureScript works with
