@@ -1,4 +1,6 @@
-# Getting Started with Elmish
+---
+title: Getting Started
+---
 
 ## Requisite tools
 

@@ -1,4 +1,6 @@
-# Intro
+---
+title: Intro
+---
 
 Elmish is a PureScript UI library that (loosely) follows [The Elm
 Architecture](https://guide.elm-lang.org/architecture/) and implemented as a
