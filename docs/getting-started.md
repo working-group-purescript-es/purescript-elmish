@@ -32,6 +32,7 @@ well as Node and its associated tooling.
    the following code in it:
 
    ```html
+   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
     <div id="app">The UI is not here yet</div>
     <script src="output/index.js"></script>
     <script>window.Main.main()</script>
@@ -40,6 +41,8 @@ well as Node and its associated tooling.
    The first line is the container for the application to render itself in. The
    second line references the JavaScript bundle (result of your code
    compilation). The third line invokes the PureScript entry point function.
+
+   > **Note:** we're using Boostrap for styling. Looks better that way.
 
 2. Open `package.json`, find the `scripts` section in it, and add the following line:
 
@@ -84,11 +87,13 @@ update _ _ = pure unit
 
 view :: State -> Dispatch Message -> ReactElement
 view _ _ =
-   H.div {}
+   H.div "p-4"
    [ H.text "Hello, "
-   , H.strong {} "World!"
+   , H.strong "" "World!"
    ]
 ```
+
+> **Note**: the `H.div` function takes CSS class as first parameter, and so does the `H.strong` function. This style works very well with Bootstrap (where most elements have a class), but it's not the only choice. See [DOM elements](dom-elements.md#atomic-css) for more.
 
 To make that compile, you'll need the following imports:
 
@@ -150,12 +155,16 @@ And finally, the `view` function should add a button:
   view :: State -> Dispatch Message -> ReactElement
 - view _ _ =
 + view state dispatch =
-     H.div {}
-     [ H.text "Hello, "
--    , H.strong {} "World!"
-+    , H.strong {} state.word
-+    , H.text "! "
-+    , H.button { onClick: dispatch ButtonClicked } "Click me!"
+     H.div "p-4"
++    [ H.div ""
+-    [ H.text "Hello, "
+-    , H.strong "" "World!"
+-    , H.text "! "
++      [ H.text "Hello, "
++      , H.strong "" state.word
++      , H.text "! "
++      ]
++    , H.button_ "btn btn-primary mt-3" { onClick: dispatch ButtonClicked } "Click me!"
      ]
 ```
 
@@ -163,38 +172,7 @@ If you refresh your browser now, you should see this:
 
 ![Interaction](getting-started-interaction.gif)
 
-> **NOTE:** we just introduced the first prop (`onClick`) passed to a DOM element (`button`).
-For a more detailed discussion of props, see [DOM elements](dom-elements.md).
-
-## Using Bootstrap
-
-If you're using Bootstrap (or another atomic CSS library), you could pass the
-standard React `className` prop. For example:
-
-```haskell
-H.div { className: "border bg-light" }
-[ ...
-, H.button { className: "btn btn-primary px-4", onClick: dispatch ButtonClicked } "Click me!"
-]
-```
-
-But a more convenient way is to use module `Elmish.HTML.Styled`, which allows
-passing the CSS class as first parameter to all elements:
-
-```haskell
-import Elmish.HTML.Styled as H
-
-...
-
-H.div "border bg-light"
-[ ...
-, H.button_ "btn btn-primary px-4" { onClick: dispatch ButtonClicked } "Click me!"
-]
-```
-
-For more details on this, see [DOM elements](dom-elements.md#atomic-css).
-
-> **NOTE**: from now on, all examples will be using this scheme
+> **NOTE:** we just introduced the first prop (`onClick`) passed to a DOM element (`button`). For a more detailed discussion of props, see [DOM elements](dom-elements.md).
 
 ## More complex events
 
@@ -253,14 +231,25 @@ the text:
 
 ![Event Arguments](getting-started-eventargs.gif)
 
-> **NOTE:** the example code is now using Bootstrap styles
-
 But of course, this is a bit too much ceremony, so there is a special operator `<?|` that takes care of the `case` and the `mkEffectFn1` parts for us:
 
-```hasell
+```haskell
    , onChange: dispatch <?| \f ->
       (readForeign f :: _ { target :: { value :: String } })
       <#> \e -> WordChanged e.target.value
 ```
 
 Unfortunately, we still have to specify the shape of the record. Otherwise the compiler won't be able to tell what we expect to find.
+
+For frequently used patterns like this, it's often benefitial to extract them as a function:
+
+```haskell
+eventTargetValue :: Foreign -> Maybe String
+eventTargetValue f =
+   (readForeign f :: _ { target :: { value :: String } })
+   <#> _.target.value
+
+...
+
+   , onChange: dispatch <?| \f -> WordChanged <$> eventTargetValue f
+```
