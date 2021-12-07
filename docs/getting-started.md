@@ -32,7 +32,7 @@ well as Node and its associated tooling.
    the following code in it:
 
    ```html
-   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
     <div id="app">The UI is not here yet</div>
     <script src="output/index.js"></script>
     <script>window.Main.main()</script>
@@ -231,7 +231,12 @@ the text:
 
 But of course, this is a bit too much ceremony, so there is a special operator `<?|` that takes care of the `case` and the `mkEffectFn1` parts for us:
 
-```haskell
+```diff
+- import Elmish (Dispatch, ReactElement, Transition)
++ import Elmish (Dispatch, ReactElement, Transition, (<?|))
+
+...
+
    , onChange: dispatch <?| \f ->
       (readForeign f :: _ { target :: { value :: String } })
       <#> \e -> WordChanged e.target.value
@@ -251,3 +256,68 @@ eventTargetValue f =
 
    , onChange: dispatch <?| \f -> WordChanged <$> eventTargetValue f
 ```
+
+## Effects
+
+A rare UI comes without _effects_ - something that happens outside the UI, be it local storage, timers, communication with a server, and so on.
+
+In Elmish effects are defined by the `update` function. Its return type `Transition Message State` encodes the new ("updated") state and zero or more effects that should happen as a result of this state transition (hence the name `Transition`).
+
+Let's add a simple effect as a result of our `ButtonClicked` message: output a line to the console.
+
+```diff
++ import Effect.Class.Console (log)
+- import Elmish (Transition, Dispatch, ReactElement, (<?|))
++ import Elmish (Transition, Dispatch, ReactElement, forkVoid, (<?|))
+
+...
+
+  update :: State -> Message -> Transition Message State
+- update state ButtonClicked = pure state { word = "Elmish" }
++ update state ButtonClicked = do
++   forkVoid $ log "Button clicked"
++   pure state { word = "Elmish" }
+  update state (WordChanged s) = pure state { word = s }
+```
+
+If you refresh your browser now and open console in the developer tools, you should see something like this:
+
+![Effect: Console](getting-started-effect-log.gif)
+
+The `forkVoid` function adds an effect to the current state transition. The "void" suffix means that the effect does not produce any more messages.
+
+But most effects do eventually produce a message. Think of a server interaction: in most cases the server response has to affect the UI somehow. To achieve this, use the function `fork` (without the "void" suffix).
+
+Server communication is a bit too complicated for this tutorial, so let's add a timer instead:
+
+```diff
++ import Effect.Aff (Milliseconds(..), delay)
+  import Effect.Class.Console (log)
+- import Elmish (Dispatch, ReactElement, Transition, forkVoid, (<?|))
++ import Elmish (Dispatch, ReactElement, Transition, fork, forkVoid, (<?|))
+
+...
+
+  data Message
+    = ButtonClicked
+    | WordChanged String
++   | TimeoutElapsed
+
+...
+
+  update :: State -> Message -> Transition Message State
+  update state ButtonClicked = do
+    forkVoid $ log "Button clicked"
++   fork do
++     delay $ Milliseconds 1000.0
++     pure TimeoutElapsed
+    pure state { word = "Elmish" }
+  update state (WordChanged s) =
+    pure state { word = s }
++ update state TimeoutElapsed =
++   pure state { word = state.word <> " after a while" }
+```
+
+![Effect: Timer](getting-started-effect-timer.gif)
+
+> **NOTE**: there are many more ways to work with effects. For more information please see [the page about state transitions](transition.md#effects)

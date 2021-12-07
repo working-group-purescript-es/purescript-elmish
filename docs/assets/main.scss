@@ -1,0 +1,12 @@
+---
+# Only the main Sass file needs front matter (the dashes are enough)
+---
+
+@import "{{ site.theme }}";
+
+.callout {
+  border: 1px solid #AAA;
+  border-radius: 0.5rem;
+  background-color: #CEFAE9;
+  padding: 0.8rem;
+}
