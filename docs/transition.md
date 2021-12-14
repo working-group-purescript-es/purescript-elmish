@@ -42,7 +42,7 @@ modifyCount state delta = do
 
 ## <a name="effects"></a>Effects
 
-The high-level, most convenient way to add an effect to a transition is via the `fork` function. For example, if we wanted to make counter increments to happen with a delay, we might do something like this:
+The high-level, most convenient way to add an effect to a transition is via the `fork` function. For example, if we wanted to make counter increments happen after a delay, we might do something like this:
 
 ```haskell
 data Message = Inc | Dec | StartInc
@@ -58,7 +58,7 @@ update state StartInc = do
   pure state
 ```
 
-The block passed to the `fork` function is an `Aff` computation, which waits one seconds and then returns the `Inc` message. This message will then be fed right back into the `update` function, causing the state update to increase the count.
+The block passed to the `fork` function is an `Aff` computation, which waits one second and then returns the `Inc` message. This message will then be fed right back into the `update` function, causing the state update to increase the count.
 
 Sometimes it happens so that the computation may or may not produce a message depending on some external reasons. In this case, the `forkMaybe` function is handy. It takes an `Aff (Maybe message)` computation as a parameter, thus allowing for no message to be produced:
 
