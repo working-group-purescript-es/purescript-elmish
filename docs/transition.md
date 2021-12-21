@@ -108,7 +108,7 @@ In this example the effectful computation produces one `Inc` message after a sec
 
 ## Under the hood
 
-At the most fundamental level, `Transition` it a pair of "new state" and "array of effects". This is how it's defined:
+At the most fundamental level, `Transition` is a pair of "new state" and "array of effects". This is how it's defined:
 
 ```haskell
 data Transition msg state = Transition state (Array (Command msg))
