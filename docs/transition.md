@@ -106,7 +106,7 @@ update state StartInc = do
 
 In this example the effectful computation produces one `Inc` message after a second, another one 2 seconds after that, and a third after 3 more seconds.
 
-## Under the hood
+## <a name="under-the-hood"></a>Under the hood
 
 At the most fundamental level, `Transition` is a pair of "new state" and "array of effects". This is how it's defined:
 

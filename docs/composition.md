@@ -8,7 +8,7 @@ In a real program, it is almost never enough to have all of the UI logic and vis
 
 This page describes different patterns of such decomposition supported by Elmish.
 
-## View functions
+## Partial view functions
 
 The simplest way to split up a big UI is to extract some parts of its `view` function as separate functions, what in some contexts might be called "partial view". For example, consider the bespoke counter UI:
 
@@ -31,6 +31,8 @@ button text onClick =
   , H.button_ "btn btn-primary" { onClick } text
   ]
 ```
+
+![Counter example](counter-1.png)
 
 Here, we have extracted the visuals for "increase" and "decrease" buttons as a partial view function named `button`, which is then used twice in the main `view` function.
 
@@ -55,10 +57,96 @@ button { text, onClick } =
   ]
 ```
 
+## Composing full-fledged components
 
-* Elm-style
-    * Unwrap/rewrap
-    * Bifunctor
-    * Monad
-* View-only
+Partial view functions are great, because they're simple, but sometimes it does make sense to package away a whole piece of complex UI logic - either for reuse or just for code organization. This setup is usually referred to as "child components".
+
+For example, let's say we wanted to create a UI consisting of _two_ such counters as shown above:
+
+![Counters composed](counter-2.png)
+
+To do this, we would aggregate the two counters' states, route their messages and state transitions, and compose their views:
+
+```haskell
+import Counter as Counter
+
+-- Aggregate child components' states
+type State =
+  { left :: Counter.State
+  , right :: Counter.State
+  }
+
+-- Aggregate child components' messages
+data Message
+  = LeftMsg Counter.Message
+  | RightMsg Counter.Message
+
+view :: State -> Dispatch Message -> ReactElement
+view state dispatch =
+  H.div "row"
+  [ H.div "col-6"
+    [ H.h3 "" "Left counter"
+    , Counter.view state.left (dispatch <<< LeftMsg)
+    ]
+  , H.div "col-6"
+    [ H.h3 "" "Right counter"
+    , Counter.view state.right (dispatch <<< RightMsg)
+    ]
+  ]
+```
+
+Note how we're calling `Counter.view` twice, but passing it different states (`left` and `right`) and different `Dispatch` functions - one wrapping Counter's messages in `LeftMsg` and the other wrapping them in `RightMsg`.
+
+So far so good. But what about the `update` function?
+
+Since `Transition` is a pair of state + effects (see [Transition: Under the Hood](transition.md#under-the-hood)), we could do it the straightforward way:
+
+  1. Call `Counter.update`
+  2. Unwrap the resulting `Transition` to obtain the new counter state and any effects.
+  3. Plug the new counter state into the aggregate `State`
+  4. Modify the effects to wrap all messages they produce in `LeftMsg` (or `RightMsg`).
+  5. Reconstruct `Transition` out of the new aggregate `State` and the modified effects.
+
+This is what your typical Elm program does, and it would look something like this:
+
+```haskell
+update state (LeftMsg m) =
+  let Transition s effs = Counter.update state.left m
+      state' = state { left = s }
+      effs' = map LeftMsg <$> effs
+  in
+    Transition state' effs'
+```
+
+This is straightforward, but in practice this becomes very tedious very fast. So instead, we could use the fact that `Transition` is a monad (to thread the state via `bind`) as well as a `Bifunctor` (to wrap the effect messages via `lmap`). This would look somewhat like this:
+
+```haskell
+update state (LeftMsg m) = do
+  s' <- lmap LeftMsg $ Counter.update state.left m
+  pure state { left = s' }
+```
+
+> **NOTE**: See the [Transition](transition.md) page for a detailed description of how the `do` notation works with `Transition`
+
+Or even better: for a straightforward mapping like this, without any extra processing, we could use just the `Bifunctor` aspect of `Transition` and map both messages and state via `bimap`:
+
+```haskell
+update state (LeftMsg m) =
+  bimap LeftMsg state { left = _ } $ Counter.update state.left m
+```
+
+> **NOTE**: This syntax works because of how PureScript's record updates are parsed. The expression `state { left = _ }` is a single term, equivalent to a function `\x -> state { left = x }`
+
+Armed with this knowledge, we can now write the full `update` function of the composed component:
+
+```haskell
+update :: State -> Message -> Transition Message State
+update state (LeftMsg m) =
+  bimap LeftMsg state { left = _ } $ Counter.update state.left m
+update state (RightMsg m) =
+  bimap RightMsg state { right = _ } $ Counter.update state.right m
+```
+
+This mode of composition is sure less tedious than in Elm, but still heavy compared to the partial view functions. Use with care.
+
 * Dedicated event loop
