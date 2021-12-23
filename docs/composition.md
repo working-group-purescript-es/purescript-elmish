@@ -2,8 +2,6 @@
 title: Composition
 ---
 
-> **Under construction**. This page is unfinished. Many headings just have some bullet points sketching the main points that should be discussed.
-
 In a real program, it is almost never enough to have all of the UI logic and visuals in one place. Almost always it is beneficial to split up the UI into smaller parts, usually located in separate modules, be it for clarity and maintainability or for reuse.
 
 This page describes different patterns of such decomposition supported by Elmish.
@@ -149,4 +147,7 @@ update state (RightMsg m) =
 
 This mode of composition is sure less tedious than in Elm, but still heavy compared to the partial view functions. Use with care.
 
-* Dedicated event loop
+## Dedicated event loop
+
+> **Under construction**
+
