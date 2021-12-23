@@ -42,7 +42,7 @@ well as Node and its associated tooling.
    second line references the JavaScript bundle (result of your code
    compilation). The third line invokes the PureScript entry point function.
 
-   > **Note:** we're using Boostrap for styling. Looks better that way.
+   > **Note:** we're using Bootstrap for styling. Looks better that way.
 
 2. Open `package.json`, find the `scripts` section in it, and add the following line:
 
