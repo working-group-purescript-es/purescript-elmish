@@ -2,13 +2,19 @@
 title: Composition
 ---
 
-In a real program, it is almost never enough to have all of the UI logic and visuals in one place. Almost always it is beneficial to split up the UI into smaller parts, usually located in separate modules, be it for clarity and maintainability or for reuse.
+In a real program, it is almost never enough to have all of the UI logic and
+visuals in one place. Almost always it is beneficial to split up the UI into
+smaller parts, usually located in separate modules, be it for clarity and
+maintainability or for reuse.
 
-This page describes different patterns of such decomposition supported by Elmish.
+This page describes different patterns of such decomposition supported by
+Elmish.
 
 ## Partial view functions
 
-The simplest way to split up a big UI is to extract some parts of its `view` function as separate functions, what in some contexts might be called "partial view". For example, consider the bespoke counter UI:
+The simplest way to split up a big UI is to extract some parts of its `view`
+function as separate functions, what in some contexts might be called "partial
+view". For example, consider the bespoke counter UI:
 
 ```haskell
 type State = { count :: Int }
@@ -32,11 +38,15 @@ button text onClick =
 
 ![Counter example](counter-1.png)
 
-Here, we have extracted the visuals for "increase" and "decrease" buttons as a partial view function named `button`, which is then used twice in the main `view` function.
+Here, we have extracted the visuals for "increase" and "decrease" buttons as a
+partial view function named `button`, which is then used twice in the main
+`view` function.
 
-> **NOTE:** such "partial view" function doesn't have to be just a visual. As seen in this example, it can produce messages as well.
+> **NOTE:** such "partial view" function doesn't have to be just a visual. As
+> seen in this example, it can produce messages as well.
 
-Often, especially with larger partial views, it's beneficial to name their parameters by gathering them in a record:
+Often, especially with larger partial views, it's beneficial to name their
+parameters by gathering them in a record:
 
 ```haskell
 view :: State -> Dispatch Message -> ReactElement
@@ -57,13 +67,18 @@ button { text, onClick } =
 
 ## Composing full-fledged components
 
-Partial view functions are great, because they're simple, but sometimes it does make sense to package away a whole piece of complex UI logic - either for reuse or just for code organization. This setup is usually referred to as "child components".
+Partial view functions are great, because they're simple, but sometimes it does
+make sense to package away a whole piece of complex UI logic - either for reuse
+or just for code organization. This setup is usually referred to as "child
+components".
 
-For example, let's say we wanted to create a UI consisting of _two_ such counters as shown above:
+For example, let's say we wanted to create a UI consisting of _two_ such
+counters as shown above:
 
 ![Counters composed](counter-2.png)
 
-To do this, we would aggregate the two counters' states, route their messages and state transitions, and compose their views:
+To do this, we would aggregate the two counters' states, route their messages
+and state transitions, and compose their views:
 
 ```haskell
 import Counter as Counter
@@ -93,19 +108,26 @@ view state dispatch =
   ]
 ```
 
-Note how we're calling `Counter.view` twice, but passing it different states (`left` and `right`) and different `Dispatch` functions - one wrapping Counter's messages in `LeftMsg` and the other wrapping them in `RightMsg`.
+Note how we're calling `Counter.view` twice, but passing it different states
+(`left` and `right`) and different `Dispatch` functions - one wrapping Counter's
+messages in `LeftMsg` and the other wrapping them in `RightMsg`.
 
 So far so good. But what about the `update` function?
 
-Since `Transition` is a pair of state + effects (see [Transition: Under the Hood](transition.md#under-the-hood)), we could do it the straightforward way:
+Since `Transition` is a pair of state + effects (see [Transition: Under the
+Hood](transition.md#under-the-hood)), we could do it the straightforward way:
 
   1. Call `Counter.update`
-  2. Unwrap the resulting `Transition` to obtain the new counter state and any effects.
+  2. Unwrap the resulting `Transition` to obtain the new counter state and any
+     effects.
   3. Plug the new counter state into the aggregate `State`
-  4. Modify the effects to wrap all messages they produce in `LeftMsg` (or `RightMsg`).
-  5. Reconstruct `Transition` out of the new aggregate `State` and the modified effects.
+  4. Modify the effects to wrap all messages they produce in `LeftMsg` (or
+     `RightMsg`).
+  5. Reconstruct `Transition` out of the new aggregate `State` and the modified
+     effects.
 
-This is what your typical Elm program does, and it would look something like this:
+This is what your typical Elm program does, and it would look something like
+this:
 
 ```haskell
 update state (LeftMsg m) =
@@ -116,7 +138,10 @@ update state (LeftMsg m) =
     Transition state' effs'
 ```
 
-This is straightforward, but in practice this becomes very tedious very fast. So instead, we could use the fact that `Transition` is a monad (to thread the state via `bind`) as well as a `Bifunctor` (to wrap the effect messages via `lmap`). This would look somewhat like this:
+This is straightforward, but in practice this becomes very tedious very fast. So
+instead, we could use the fact that `Transition` is a monad (to thread the state
+via `bind`) as well as a `Bifunctor` (to wrap the effect messages via `lmap`).
+This would look somewhat like this:
 
 ```haskell
 update state (LeftMsg m) = do
@@ -124,18 +149,24 @@ update state (LeftMsg m) = do
   pure state { left = s' }
 ```
 
-> **NOTE**: See the [Transition](transition.md) page for a detailed description of how the `do` notation works with `Transition`
+> **NOTE**: See the [Transition](transition.md) page for a detailed description
+> of how the `do` notation works with `Transition`
 
-Or even better: for a straightforward mapping like this, without any extra processing, we could use just the `Bifunctor` aspect of `Transition` and map both messages and state via `bimap`:
+Or even better: for a straightforward mapping like this, without any extra
+processing, we could use just the `Bifunctor` aspect of `Transition` and map
+both messages and state via `bimap`:
 
 ```haskell
 update state (LeftMsg m) =
   bimap LeftMsg state { left = _ } $ Counter.update state.left m
 ```
 
-> **NOTE**: This syntax works because of how PureScript's record updates are parsed. The expression `state { left = _ }` is a single term, equivalent to a function `\x -> state { left = x }`
+> **NOTE**: This syntax works because of how PureScript's record updates are
+> parsed. The expression `state { left = _ }` is a single term, equivalent to a
+> function `\x -> state { left = x }`
 
-Armed with this knowledge, we can now write the full `update` function of the composed component:
+Armed with this knowledge, we can now write the full `update` function of the
+composed component:
 
 ```haskell
 update :: State -> Message -> Transition Message State
@@ -145,9 +176,11 @@ update state (RightMsg m) =
   bimap RightMsg state { right = _ } $ Counter.update state.right m
 ```
 
-This mode of composition is sure less tedious than in Elm, but still heavy compared to the partial view functions. Use with care.
+This mode of composition is sure less tedious than in Elm, but still heavy
+compared to the partial view functions. Use with care.
 
 ## Dedicated event loop
 
-> **Under construction**
+Aggregating child component's state and message into those of the parent
+component is the standard composition procedure in The Elm Architecture, however
 

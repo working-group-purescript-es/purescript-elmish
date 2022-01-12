@@ -17,12 +17,13 @@ well as Node and its associated tooling.
    The result should be a lone `package.json` file.
 2. Run `npm install --save purescript spago react react-dom esbuild` to install:
     * `purescript` - the PureScript compiler.
-    * `spago` - [the PureScript package manager](https://github.com/purescript/spago).
+    * `spago` - [the PureScript package
+      manager](https://github.com/purescript/spago).
     * `react` and `react-dom` - the React library, on which Elmish is based.
     * `esbuild` - the fastest JavaScript bundler currently available.
 3. Run `npx spago init` to initialize a new PureScript project in the directory.
-   This should create a bit of scaffolding, including a couple of `*.dhall` files
-   and an `src` directory with `Main.purs` in it.
+   This should create a bit of scaffolding, including a couple of `*.dhall`
+   files and an `src` directory with `Main.purs` in it.
 4. Run `npx spago install elmish elmish-html` to install the Elmish library and
    its companion `elmish-html`.
 
@@ -44,7 +45,8 @@ well as Node and its associated tooling.
 
    > **Note:** we're using Bootstrap for styling. Looks better that way.
 
-2. Open `package.json`, find the `scripts` section in it, and add the following line:
+2. Open `package.json`, find the `scripts` section in it, and add the following
+   line:
 
    ```json
    "start": "spago build && esbuild ./output/Main/index.js --bundle --serve --servedir=. --outfile=output/index.js --global-name=Main"
@@ -93,13 +95,16 @@ view _ _ =
    ]
 ```
 
-> **Note**: the `H.div` function takes CSS class as first parameter, and so does the `H.strong` function. This style works very well with Bootstrap (where most elements have a class), but it's not the only choice. See [DOM elements](dom-elements.md#atomic-css) for more.
+> **Note**: the `H.div` function takes CSS class as first parameter, and so does
+> the `H.strong` function. This style works very well with Bootstrap (where most
+> elements have a class), but it's not the only choice. See [DOM
+> elements](dom-elements.md#atomic-css) for more.
 
 To make that compile, you'll need the following imports:
 
 ```haskell
 import Elmish (Transition, Dispatch, ReactElement)
-import Elmish.HTML as H  -- This is more convenient to import qualified
+import Elmish.HTML.Styled as H  -- This is more convenient to import qualified
 import Elmish.Boot (defaultMain) -- We'll need this in a moment
 ```
 
@@ -170,7 +175,9 @@ If you refresh your browser now, you should see this:
 
 ![Interaction](getting-started-interaction.gif)
 
-> **NOTE:** we just introduced the first prop (`onClick`) passed to a DOM element (`button`). For a more detailed discussion of props, see [DOM elements](dom-elements.md).
+> **NOTE:** we just introduced the first prop (`onClick`) passed to a DOM
+> element (`button`). For a more detailed discussion of props, see [DOM
+> elements](dom-elements.md).
 
 ## More complex events
 
@@ -179,7 +186,7 @@ event: it doesn't have any parameters, but most events do.
 
 The `elmish-html` library models all events of standard DOM elements as an
 effectful function (i.e. `EffectFn1`) taking a `Foreign` parameter, even though
-the underlying value is actuall React Synthetic Event. Mostly this is because
+the underlying value is actually React Synthetic Event. Mostly this is because
 it's still a work in progress. Events may get a more interesting type in the
 future.
 
@@ -229,7 +236,8 @@ the text:
 
 ![Event Arguments](getting-started-eventargs.gif)
 
-But of course, this is a bit too much ceremony, so there is a special operator `<?|` that takes care of the `case` and the `mkEffectFn1` parts for us:
+But of course, this is a bit too much ceremony, so there is a special operator
+`<?|` that takes care of the `case` and the `mkEffectFn1` parts for us:
 
 ```diff
 - import Elmish (Dispatch, ReactElement, Transition)
@@ -242,9 +250,11 @@ But of course, this is a bit too much ceremony, so there is a special operator `
       <#> \e -> WordChanged e.target.value
 ```
 
-Unfortunately, we still have to specify the shape of the record. Otherwise the compiler won't be able to tell what we expect to find.
+Unfortunately, we still have to specify the shape of the record. Otherwise the
+compiler won't be able to tell what we expect to find.
 
-For frequently used patterns like this, it's often benefitial to extract them as a function:
+For frequently used patterns like this, it's often benefitial to extract them as
+a function:
 
 ```haskell
 eventTargetValue :: Foreign -> Maybe String
@@ -259,11 +269,16 @@ eventTargetValue f =
 
 ## Effects
 
-A rare UI comes without _effects_ - something that happens outside the UI, be it local storage, timers, communication with a server, and so on.
+A rare UI comes without _effects_ - something that happens outside the UI, be it
+local storage, timers, communication with a server, and so on.
 
-In Elmish effects are defined by the `update` function. Its return type `Transition Message State` encodes the new ("updated") state and zero or more effects that should happen as a result of this state transition (hence the name `Transition`).
+In Elmish effects are defined by the `update` function. Its return type
+`Transition Message State` encodes the new ("updated") state and zero or more
+effects that should happen as a result of this state transition (hence the name
+`Transition`).
 
-Let's add a simple effect as a result of our `ButtonClicked` message: output a line to the console.
+Let's add a simple effect as a result of our `ButtonClicked` message: output a
+line to the console.
 
 ```diff
 + import Effect.Class.Console (log)
@@ -280,15 +295,20 @@ Let's add a simple effect as a result of our `ButtonClicked` message: output a l
   update state (WordChanged s) = pure state { word = s }
 ```
 
-If you refresh your browser now and open console in the developer tools, you should see something like this:
+If you refresh your browser now and open console in the developer tools, you
+should see something like this:
 
 ![Effect: Console](getting-started-effect-log.gif)
 
-The `forkVoid` function adds an effect to the current state transition. The "void" suffix means that the effect does not produce any more messages.
+The `forkVoid` function adds an effect to the current state transition. The
+"void" suffix means that the effect does not produce any more messages.
 
-But most effects do eventually produce a message. Think of a server interaction: in most cases the server response has to affect the UI somehow. To achieve this, use the function `fork` (without the "void" suffix).
+But most effects do eventually produce a message. Think of a server interaction:
+in most cases the server response has to affect the UI somehow. To achieve this,
+use the function `fork` (without the "void" suffix).
 
-Server communication is a bit too complicated for this tutorial, so let's add a timer instead:
+Server communication is a bit too complicated for this tutorial, so let's add a
+timer instead:
 
 ```diff
 + import Effect.Aff (Milliseconds(..), delay)
@@ -320,4 +340,5 @@ Server communication is a bit too complicated for this tutorial, so let's add a 
 
 ![Effect: Timer](getting-started-effect-timer.gif)
 
-> **NOTE**: there are many more ways to work with effects. For more information please see [the page about state transitions](transition.md#effects)
+> **NOTE**: there are many more ways to work with effects. For more information
+> please see [the page about state transitions](transition.md#effects)

@@ -1,4 +1,5 @@
-> **Under construction**. This page is unfinished. Many headings just have some bullet points sketching the main points that should be discussed.
+> **Under construction**. This page is unfinished. Many headings just have some
+> bullet points sketching the main points that should be discussed.
 
 # DOM elements
 * Elmish itself is agnostic
@@ -14,7 +15,9 @@
 
 ## <a name="atomic-css"></a>Atomic CSS support
 
-If you prefer Bootstrap for styling (or another atomic CSS library), you could use it exactly the same way you would in React - by passing in a `className` prop. For example:
+If you prefer Bootstrap for styling (or another atomic CSS library), you could
+use it exactly the same way you would in React - by passing in a `className`
+prop. For example:
 
 ```haskell
 import Elmish.HTML as H
@@ -25,7 +28,9 @@ H.div { className: "border bg-light" }
 ]
 ```
 
-But we found that this quickly becomes quite inconvenient. So the `elmish-html` library provides an alternative module `Elmish.HTML.Styled`, which exports alternative versions of all elements taking the CSS class as first parameter:
+But we found that this quickly becomes quite inconvenient. So the `elmish-html`
+library provides an alternative module `Elmish.HTML.Styled`, which exports
+alternative versions of all elements taking the CSS class as first parameter:
 
 ```haskell
 import Elmish.HTML.Styled as H
@@ -36,7 +41,8 @@ H.div "border bg-light"
 ]
 ```
 
-This scheme is somewhat inspired by the [HAML templates](https://haml.info/), which for the example above would look something like this:
+This scheme is somewhat inspired by the [HAML templates](https://haml.info/),
+which for the example above would look something like this:
 
 ```haml
 %div.border.bg-light
@@ -44,11 +50,14 @@ This scheme is somewhat inspired by the [HAML templates](https://haml.info/), wh
   %button.btn.btn-primary.px-4 Click me!
 ```
 
-We find this much more convenient in practice, but of course it's stricly optional. And you can also mix and match as you wish.
+We find this much more convenient in practice, but of course it's stricly
+optional. And you can also mix and match as you wish.
 
 ### **Q:** ok, but what if I need to pass other props, besides `className`?
 
-To facilitate this, every element in `Elmish.HTML.Styled` has two versions - e.g. `button` and `button_` (note the underscore). The former just takes CSS class as parameter, while the latter also takes other props as a record:
+To facilitate this, every element in `Elmish.HTML.Styled` has two versions -
+e.g. `button` and `button_` (note the underscore). The former just takes CSS
+class as parameter, while the latter also takes other props as a record:
 
 ```haskell
 import Elmish.HTML.Styled as H
@@ -59,7 +68,8 @@ H.div "border bg-light"
 ]
 ```
 
-This scheme is used for all elements, even those that don't make sense without props (such as `img` or `input`), just for consistency and predictability.
+This scheme is used for all elements, even those that don't make sense without
+props (such as `img` or `input`), just for consistency and predictability.
 
 ## <a name="events"></a>Event handlers
 * A work in progress, not good API
